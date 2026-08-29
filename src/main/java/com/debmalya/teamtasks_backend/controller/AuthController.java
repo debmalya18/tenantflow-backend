@@ -1,5 +1,6 @@
 package com.debmalya.teamtasks_backend.controller;
 
+import com.debmalya.teamtasks_backend.dto.LoginRequest;
 import com.debmalya.teamtasks_backend.dto.SignupRequest;
 import com.debmalya.teamtasks_backend.service.AuthService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,5 +21,10 @@ public class AuthController {
     @PostMapping("/signup")
     public String signup(@RequestBody SignupRequest request) {
         return authService.signup(request);
+    }
+
+    @PostMapping("/login")
+    public String login(@RequestBody LoginRequest request) {
+        return authService.login(request);
     }
 }

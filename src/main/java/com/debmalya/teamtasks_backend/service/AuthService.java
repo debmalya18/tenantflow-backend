@@ -1,5 +1,7 @@
 package com.debmalya.teamtasks_backend.service;
 
+import com.debmalya.teamtasks_backend.config.JwtUtil;
+import com.debmalya.teamtasks_backend.dto.LoginRequest;
 import com.debmalya.teamtasks_backend.dto.SignupRequest;
 import com.debmalya.teamtasks_backend.model.Team;
 import com.debmalya.teamtasks_backend.model.User;
@@ -14,11 +16,13 @@ public class AuthService {
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
-    public AuthService(UserRepository userRepository, TeamRepository teamRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, TeamRepository teamRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.teamRepository = teamRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     public String signup(SignupRequest request) {
@@ -41,5 +45,17 @@ public class AuthService {
         userRepository.save(user);
 
         return "Signup successful";
+    }
+
+    public String login(LoginRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid email or password");
+        }
+
+        return jwtUtil.generateToken(user.getEmail());
     }
 }

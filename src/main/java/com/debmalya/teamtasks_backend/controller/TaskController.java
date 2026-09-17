@@ -4,6 +4,7 @@ import com.debmalya.teamtasks_backend.dto.TaskResponse;
 import com.debmalya.teamtasks_backend.model.Task;
 import com.debmalya.teamtasks_backend.model.User;
 import com.debmalya.teamtasks_backend.repository.TaskRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +17,11 @@ import java.util.stream.Collectors;
 public class TaskController {
 
     private final TaskRepository taskRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public TaskController(TaskRepository taskRepository) {
+    public TaskController(TaskRepository taskRepository, SimpMessagingTemplate messagingTemplate) {
         this.taskRepository = taskRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @PostMapping
@@ -28,7 +31,11 @@ public class TaskController {
         task.setTeam(currentUser.getTeam());
         task.setAssignedTo(currentUser);
         Task saved = taskRepository.save(task);
-        return new TaskResponse(saved);
+
+        TaskResponse response = new TaskResponse(saved);
+        messagingTemplate.convertAndSend("/topic/team/" + currentUser.getTeam().getId(), response);
+
+        return response;
     }
 
     @GetMapping
@@ -56,7 +63,10 @@ public class TaskController {
         }
 
         Task updated = taskRepository.save(task);
-        return new TaskResponse(updated);
+        TaskResponse response = new TaskResponse(updated);
+        messagingTemplate.convertAndSend("/topic/team/" + currentUser.getTeam().getId(), response);
+
+        return response;
     }
 
     @DeleteMapping("/{id}")
@@ -69,6 +79,8 @@ public class TaskController {
         }
 
         taskRepository.delete(task);
+        messagingTemplate.convertAndSend("/topic/team/" + currentUser.getTeam().getId(), "Task " + id + " deleted");
+
         return "Task deleted successfully";
     }
 }

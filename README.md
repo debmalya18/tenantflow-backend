@@ -1,8 +1,11 @@
-![Java](https://img.shields.io/badge/Java-21-orange) ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-brightgreen) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-blue)
+![Java](https://img.shields.io/badge/Java-21-orange) ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-brightgreen) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-blue) [![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-46E3B7)](https://tenantflow-backend-q4xa.onrender.com)
 
 # TenantFlow
 
 **A multi-tenant task management SaaS backend** — built with Java, Spring Boot, and PostgreSQL, featuring JWT authentication, tenant-isolated data access, role-based permissions, and real-time updates over WebSockets.
+
+**Live:** https://tenantflow-backend-q4xa.onrender.com
+*(Hosted on Render's free tier — the first request after a period of inactivity can take 15–30 seconds while the instance wakes up. Subsequent requests are fast.)*
 
 ## Why this exists
 
@@ -26,6 +29,7 @@ Most task-management demos stop at basic CRUD. TenantFlow goes further: it's bui
 | Auth | JWT (jjwt), BCrypt password hashing |
 | Real-time | STOMP over WebSocket |
 | Build | Maven |
+| Deployment | Docker on Render |
 
 ## Core features
 
@@ -33,7 +37,7 @@ Most task-management demos stop at basic CRUD. TenantFlow goes further: it's bui
 - Multi-tenancy — every task/user record is team-scoped; queries can't cross tenant boundaries
 - Role-based access control — LEADER vs MEMBER, enforced per-endpoint, tested against both positive and negative cases
 - Full task CRUD — create, list, update, delete, each verifying team ownership before mutation
-- Real-time notifications — task changes pushed live to all connected team members over WebSocket
+- Real-time notifications — task changes pushed live to all connected team members over WebSocket, verified working against the live deployment
 
 ## API overview
 
@@ -58,13 +62,16 @@ cd tenantflow-backend
 cp src/main/resources/application.properties.example src/main/resources/application.properties
 ./mvnw spring-boot:run
 
+## Deployment
+
+Deployed as a Docker container on Render, connected to a PostgreSQL database hosted on Neon. Configuration (database credentials, JWT signing secret) is injected via environment variables at runtime — nothing sensitive is committed to the repository.
+
 ## What I would improve next
 
-- Move the JWT signing secret to an environment variable instead of a hardcoded value
 - Add pagination on the task-listing endpoint
 - Refresh tokens instead of a flat 24-hour expiry
-- Integration tests (currently verified manually via PowerShell and Node scripts during development)
-- Deploy the backend alongside the Neon-hosted database
+- Automated integration tests (currently verified manually via PowerShell and Node scripts during development)
+- A frontend client
 
 ## Security highlights
 
@@ -72,8 +79,8 @@ cp src/main/resources/application.properties.example src/main/resources/applicat
 - API responses use dedicated response DTOs (e.g. TaskResponse) instead of raw entities, preventing internal fields like password hashes from leaking through JSON serialization — caught and fixed during development after inspecting an actual response payload
 - Every mutating endpoint re-verifies resource ownership server-side (task belongs to caller's team, target user belongs to caller's team) rather than trusting client-supplied IDs
 - Role checks (LEADER-only actions) are enforced in the service/controller layer on every request, not just hidden in a UI
+- Database credentials and JWT secret are supplied via environment variables in production, never committed to source control
 
 ## Testing approach
 
-No frontend exists yet, so every endpoint was verified manually end-to-end using PowerShell (Invoke-RestMethod) and a small Node.js WebSocket client, including negative-path tests — e.g. confirming a MEMBER genuinely receives a 403 when attempting a LEADER-only action, not just that a LEADER succeeds.
-
+Every endpoint was verified manually end-to-end using PowerShell (Invoke-RestMethod) and a small Node.js WebSocket client, including negative-path tests — e.g. confirming a MEMBER genuinely receives a 403 when attempting a LEADER-only action, not just that a LEADER succeeds. The same test suite was re-run against the live Render deployment to confirm production parity, including a live WebSocket broadcast test.

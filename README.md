@@ -5,7 +5,9 @@
 **A multi-tenant task management SaaS backend** — built with Java, Spring Boot, and PostgreSQL, featuring JWT authentication, tenant-isolated data access, role-based permissions, and real-time updates over WebSockets.
 
 **Live:** https://tenantflow-backend-q4xa.onrender.com
-*(Hosted on Render's free tier — the first request after a period of inactivity can take 15–30 seconds while the instance wakes up. Subsequent requests are fast.)*
+*(Hosted on Render's free tier — the first request after a period of inactivity can take 15-30 seconds while the instance wakes up. Subsequent requests are fast.)*
+
+**Try it live:** [Interactive API docs](https://tenantflow-backend-q4xa.onrender.com/swagger-ui/index.html) — no login or setup required, click any endpoint and press "Try it out"
 
 ## Why this exists
 

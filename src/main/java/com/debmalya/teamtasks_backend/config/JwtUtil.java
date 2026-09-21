@@ -10,7 +10,15 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final SecretKey secretKey = Keys.hmacShaKeyFor("this-is-a-very-long-secret-key-for-tenantflow-jwt-signing".getBytes());
+    @org.springframework.beans.factory.annotation.Value("${jwt.secret}")
+    private String jwtSecretString;
+
+    private SecretKey secretKey;
+
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        secretKey = Keys.hmacShaKeyFor(jwtSecretString.getBytes());
+    }
 
     private final long expirationMs = 1000 * 60 * 60 * 24; // 24 hours
         public String generateToken(String email) {
